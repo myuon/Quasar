@@ -14,22 +14,64 @@ instance Functor (Universe anEra) where
 era x = liftF (Era x ())
 bigCrunch = liftF BigCrunch
 
--- Readerとして使っている
--- showUniverse _ :: (世代, 値, 途中経過を示す文字列)
-showUniverse :: (Show a, Show r) => Free (Universe (a->a)) r -> a -> (Int, a, String)
-showUniverse (Free (Era e next)) v =
-    (cnt+1, (e v'), show cnt ++ "th era:" ++ show (e v') ++ "\n" ++ str)
-        where (cnt, v', str) = showUniverse next v
-showUniverse (Free BigCrunch) v =
+-- applyWithLog :: (generation, value, log)
+applyWithLog :: (Show a, Show r) => Free (Universe (a->a)) r -> a -> (Int, a, String)
+applyWithLog (Free (Era e next)) v =
+    (cnt+1,
+    (e v'),
+    show cnt ++ "th era:" ++ show (e v') ++ "\n" ++ str)
+
+    where
+        (cnt, v', str) = applyWithLog next v
+
+applyWithLog (Free BigCrunch) v =
     (1, v, "Big Crunch!\n")
 
+apply :: Free (Universe (a->a)) r -> a -> a
+apply (Free (Era e next)) v = e (apply next v)
+apply (Free BigCrunch) v = v
 
--- Timemachine
-backTo :: Int -> Free (Universe (Int->Int)) () -> Maybe (Free (Universe (Int->Int)) ())
-backTo 0 x = Just x
-backTo n (Free (Era e next)) = backTo (n-1) next
-backTo n (Free BigCrunch) = Nothing
+showMaybeUniverse :: (Show a) => Maybe (Free (Universe (a->a)) ()) -> a -> String
+showMaybeUniverse u v = case u of
+    Just u' -> show $ u' `apply` v
+    Nothing -> "Illegal Time/Space Travel"
 
+
+-- Timemachine can go back to a past universe
+mayBackTo :: Free (Universe a) () -> Int -> Maybe (Free (Universe a) ())
+mayBackTo x 0 = Just x
+mayBackTo (Free (Era e next)) n = mayBackTo next (n-1)
+mayBackTo (Free BigCrunch) n = Nothing
+
+backTo :: Free (Universe a) () -> Int -> Free (Universe a) ()
+backTo u n = case u `mayBackTo` n of
+    Just u' -> u'
+    Nothing -> Free BigCrunch
+
+-- Qubit contains many bits
+type Qubit = []
+
+bind :: Qubit a -> (a->b) -> Qubit b
+bind = flip map
+
+-- ParallelWorld is a set of Universe
+type ParallelWorld a = [Free (Universe a) ()]
+
+-- Universe Range
+univRange :: (a->b) -> Free (Universe a) () -> Free (Universe b) ()
+univRange _ _ = Free BigCrunch
+
+-- QuantumComputer apply a value to all Universe in ParallelWorld
+qComputer :: ParallelWorld (a->a) -> a -> [a]
+qComputer p v = map (`apply` v) p
+
+-- Blackhole is fixed
+bHole :: Maybe a
+bHole = Nothing
+
+-- DarkMatter defines nothing
+dMatter :: a
+dMatter = undefined
 
 anUniverse :: Free (Universe (Int->Int)) ()
 anUniverse = do
@@ -38,11 +80,9 @@ anUniverse = do
     era (1+)
     bigCrunch
 
-showMaybeUniverse :: Maybe (Free (Universe (Int->Int)) ()) -> String
-showMaybeUniverse u = case u of
-    Just u' -> (\(x,y,z)->z) $ showUniverse u' 1
-    Nothing -> "Before the Big Bang"
+--main = putStrLn $ showMaybeUniverse (anUniverse `mayBackTo` 2) 6
+--main = print $ [1,2,3,4] `bind` (+1)
+--main = print $ qComputer [anUniverse, anUniverse `backTo` 1, anUniverse `backTo` 2] 2
 
-main = putStrLn $ showMaybeUniverse $ backTo 5 anUniverse
 
 
