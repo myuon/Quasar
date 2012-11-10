@@ -25,10 +25,11 @@ showUniverse (Free BigCrunch) v =
 
 
 -- Timemachine
-backTo :: Int -> Free (Universe (Int->Int)) () -> Free (Universe (Int->Int)) ()
-backTo 0 x = x
+backTo :: Int -> Free (Universe (Int->Int)) () -> Maybe (Free (Universe (Int->Int)) ())
+backTo 0 x = Just x
 backTo n (Free (Era e next)) = backTo (n-1) next
-backTo n (Free BigCrunch) = Free BigCrunch
+backTo n (Free BigCrunch) = Nothing
+
 
 anUniverse :: Free (Universe (Int->Int)) ()
 anUniverse = do
@@ -37,5 +38,12 @@ anUniverse = do
     era (1+)
     bigCrunch
 
-main = putStr $ (\(x,y,z)->z) $ showUniverse (backTo 9 anUniverse) $ 1
+showMaybeUniverse :: Maybe (Free (Universe (Int->Int)) ()) -> String
+showMaybeUniverse u = case u of
+    Just u' -> (\(x,y,z)->z) $ showUniverse u' 1
+    Nothing -> "Before the Big Bang"
+
+-- main = putStr $ (\(x,y,z)->z) $ flip showUniverse (backTo 9 anUniverse) $ 1
+main = putStrLn $ showMaybeUniverse $ backTo (negate 1) anUniverse
+
 
