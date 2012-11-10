@@ -43,7 +43,6 @@ showMaybeUniverse u = case u of
     Just u' -> (\(x,y,z)->z) $ showUniverse u' 1
     Nothing -> "Before the Big Bang"
 
--- main = putStr $ (\(x,y,z)->z) $ flip showUniverse (backTo 9 anUniverse) $ 1
-main = putStrLn $ showMaybeUniverse $ backTo (negate 1) anUniverse
+main = putStrLn $ showMaybeUniverse $ backTo 5 anUniverse
 
 
