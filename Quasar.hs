@@ -1,4 +1,3 @@
-import qualified Data.Set
 import Control.Monad.Free
 
 -- Multiverse contains universes
@@ -73,6 +72,9 @@ bHole = Nothing
 dMatter :: a
 dMatter = undefined
 
+
+
+
 anUniverse :: Free (Universe (Int->Int)) ()
 anUniverse = do
     era (3+)
@@ -80,7 +82,8 @@ anUniverse = do
     era (1+)
     bigCrunch
 
---main = putStrLn $ showMaybeUniverse (anUniverse `mayBackTo` 2) 6
+main = putStrLn $ showMaybeUniverse (anUniverse `mayBackTo` 2) 6
+--main = putStrLn $ showMaybeUniverse (anUniverse `mayBackTo` 8) 6
 --main = print $ [1,2,3,4] `bind` (+1)
 --main = print $ qComputer [anUniverse, anUniverse `backTo` 1, anUniverse `backTo` 2] 2
 
