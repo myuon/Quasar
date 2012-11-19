@@ -1,3 +1,4 @@
+
 import Control.Monad.Free
 
 -- Multiverse contains universes
@@ -10,8 +11,10 @@ instance Functor (Universe anEra) where
     fmap f (Era e next) = Era e (f next)
     fmap f BigCrunch = BigCrunch
 
+
 era x = liftF (Era x ())
 bigCrunch = liftF BigCrunch
+
 
 -- applyWithLog :: (generation, value, log)
 applyWithLog :: (Show a, Show r) => Free (Universe (a->a)) r -> a -> (Int, a, String)
@@ -74,7 +77,6 @@ dMatter = undefined
 
 
 
-
 anUniverse :: Free (Universe (Int->Int)) ()
 anUniverse = do
     era (3+)
@@ -82,8 +84,8 @@ anUniverse = do
     era (1+)
     bigCrunch
 
-main = putStrLn $ showMaybeUniverse (anUniverse `mayBackTo` 2) 6
---main = putStrLn $ showMaybeUniverse (anUniverse `mayBackTo` 8) 6
+--main = putStrLn $ showMaybeUniverse (anUniverse `mayBackTo` 2) 6
+main = putStrLn $ showMaybeUniverse (anUniverse `mayBackTo` 8) 6
 --main = print $ [1,2,3,4] `bind` (+1)
 --main = print $ qComputer [anUniverse, anUniverse `backTo` 1, anUniverse `backTo` 2] 2
 
